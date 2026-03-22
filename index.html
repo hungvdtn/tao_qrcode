@@ -24,7 +24,7 @@
             color: var(--text-main);
         }
 
-        /* Yêu cầu 6: Header Logo và Tiêu đề */
+        /* Header Logo và Tiêu đề */
         header {
             background-color: #ffffff;
             padding: 15px 40px;
@@ -53,7 +53,7 @@
             letter-spacing: 1px;
         }
 
-        /* Yêu cầu 5: Cấu trúc 2 khối (Ngang PC, Dọc Mobile) */
+        /* Cấu trúc 2 khối (Ngang PC, Dọc Mobile) */
         .app-container {
             display: flex;
             flex-wrap: nowrap;
@@ -62,21 +62,9 @@
             max-width: 1400px;
             margin: 0 auto;
         }
-        .left-panel {
-            flex: 1;
-            min-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .right-panel {
-            width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        .left-panel { flex: 1; min-width: 400px; display: flex; flex-direction: column; gap: 20px; }
+        .right-panel { width: 450px; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Giao diện các Card (Khối) */
         .card {
             background: var(--bg-panel);
             border-radius: 12px;
@@ -85,81 +73,55 @@
             border: 1px solid var(--border-color);
         }
 
-        /* Yêu cầu 2: Tabs chọn loại dữ liệu */
+        /* Tabs chọn loại dữ liệu */
         .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
+            display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; flex-wrap: wrap;
         }
         .tab-btn {
-            background: none;
-            border: none;
-            padding: 8px 16px;
-            font-size: 15px;
-            font-weight: 600;
-            color: #777;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: 0.2s;
+            background: none; border: none; padding: 8px 16px; font-size: 15px; font-weight: 600; color: #777; cursor: pointer; border-radius: 6px; transition: 0.2s;
         }
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-        .tab-content { display: none; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Form Inputs */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #555;}
-        input[type="text"], input[type="url"], input[type="email"], input[type="tel"] {
-            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box; transition: 0.3s;
+        input[type="text"], input[type="url"], input[type="email"], input[type="tel"], input[type="password"], select {
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box; transition: 0.3s; font-family: inherit;
         }
-        input:focus { border-color: var(--primary); outline: none; }
-        .note { font-size: 12px; color: #888; margin-top: 5px; font-style: italic; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #555; }
+        .checkbox-group input { width: auto; cursor: pointer; }
 
-        /* Yêu cầu 4: Khung tùy chỉnh */
-        .setting-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
+        /* Khung tùy chỉnh */
+        .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .color-picker-wrapper { display: flex; align-items: center; gap: 10px; }
         input[type="color"] { border: none; width: 35px; height: 35px; padding: 0; cursor: pointer; background: none; border-radius: 4px;}
         .color-hex { font-size: 13px; font-family: monospace; background: #f0f0f0; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd;}
         
-        /* Thanh trượt kích thước */
         input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary); }
         .range-value { font-weight: bold; color: var(--primary); }
 
-        /* Nút chọn mức sửa lỗi */
         .ec-buttons { display: flex; gap: 10px; }
-        .ec-btn {
-            flex: 1; padding: 8px 0; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; color: #555; transition: 0.2s;
-        }
+        .ec-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; color: #555; transition: 0.2s; }
         .ec-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Nút hành động */
-        .btn-action {
-            width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
-        }
+        .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-action:hover { background: var(--primary-hover); }
 
         /* Khối hiển thị QR */
-        .qr-display-area {
-            display: flex; justify-content: center; align-items: center; min-height: 350px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; margin-bottom: 20px;
-        }
+        .qr-display-area { display: flex; justify-content: center; align-items: center; min-height: 350px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; margin-bottom: 20px; }
         #finalCanvas { max-width: 100%; height: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px; }
         #qrcode-hidden { display: none; }
 
-        /* Responsive cho thiết bị di động */
+        /* Responsive */
         @media (max-width: 900px) {
             .app-container { flex-direction: column; padding: 20px; }
             .left-panel, .right-panel { width: 100%; min-width: 100%; }
-            .right-panel { order: -1; } /* Đưa mã QR lên trên cùng ở Mobile để dễ nhìn kết quả */
+            .right-panel { order: -1; } /* Mobile đưa mã QR lên trên */
         }
     </style>
 </head>
@@ -175,10 +137,10 @@
         
         <div class="card">
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('url')">Đường link</button>
-                <button class="tab-btn" onclick="switchTab('vcard')">VCard</button>
-                <button class="tab-btn" onclick="switchTab('pdf')">PDF</button>
-                <button class="tab-btn" onclick="switchTab('image')">Hình ảnh</button>
+                <button class="tab-btn active" onclick="switchTab(event, 'url')">Đường link</button>
+                <button class="tab-btn" onclick="switchTab(event, 'vcard')">VCard</button>
+                <button class="tab-btn" onclick="switchTab(event, 'wifi')">Wifi</button>
+                <button class="tab-btn" onclick="switchTab(event, 'phone')">Điện thoại</button>
             </div>
 
             <div id="tab-url" class="tab-content active">
@@ -189,25 +151,40 @@
             </div>
 
             <div id="tab-vcard" class="tab-content">
-                <div class="form-group"><label>Họ và Tên</label><input type="text" id="vc-name" placeholder="VD: Vũ Xuân Hùng"></div>
+                <div class="form-group"><label>Họ và Tên (*)</label><input type="text" id="vc-name" placeholder="VD: Vũ Xuân Hùng"></div>
                 <div class="form-group"><label>Số điện thoại</label><input type="tel" id="vc-phone" placeholder="VD: 0988xxxxxx"></div>
                 <div class="form-group"><label>Email</label><input type="email" id="vc-email" placeholder="VD: email@domain.com"></div>
                 <div class="form-group"><label>Cơ quan / Tổ chức</label><input type="text" id="vc-org" placeholder="VD: AIBTeM"></div>
             </div>
 
-            <div id="tab-pdf" class="tab-content">
+            <div id="tab-wifi" class="tab-content">
                 <div class="form-group">
-                    <label>Đường dẫn đến tệp PDF</label>
-                    <input type="url" id="input-pdf" placeholder="Dán link Google Drive, OneDrive chứa file PDF...">
-                    <div class="note">* Do giới hạn kỹ thuật của mã QR tĩnh, vui lòng lưu trữ PDF trên nền tảng đám mây và dán liên kết chia sẻ vào đây.</div>
+                    <label>Tên mạng Wifi (SSID) (*)</label>
+                    <input type="text" id="wifi-ssid" placeholder="Nhập tên mạng Wifi...">
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="wifi-pass" placeholder="Nhập mật khẩu (Để trống nếu mạng mở)...">
+                </div>
+                <div class="form-group">
+                    <label>Loại bảo mật</label>
+                    <select id="wifi-type">
+                        <option value="WPA">WPA/WPA2 (Phổ biến nhất)</option>
+                        <option value="WEP">WEP</option>
+                        <option value="nopass">Không có mật khẩu</option>
+                    </select>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="wifi-hidden">
+                    <label for="wifi-hidden" style="margin: 0; font-weight: normal;">Mạng ẩn (Hidden Network)</label>
                 </div>
             </div>
 
-            <div id="tab-image" class="tab-content">
+            <div id="tab-phone" class="tab-content">
                 <div class="form-group">
-                    <label>Đường dẫn đến Hình ảnh</label>
-                    <input type="url" id="input-image" placeholder="Dán link Google Drive, Photos chứa hình ảnh...">
-                    <div class="note">* Vui lòng lưu trữ hình ảnh trên nền tảng đám mây và dán liên kết chia sẻ vào đây.</div>
+                    <label>Số điện thoại (*)</label>
+                    <input type="tel" id="input-phone" placeholder="VD: 0901234567">
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">* Mã QR sẽ tự động mở bàn phím gọi điện khi quét.</div>
                 </div>
             </div>
         </div>
@@ -219,7 +196,7 @@
                 <label>Màu nền trước (Mã QR)</label>
                 <div class="color-picker-wrapper">
                     <span class="color-hex" id="hex-fg">#000000</span>
-                    <input type="color" id="color-fg" value="#000000" onchange="document.getElementById('hex-fg').innerText = this.value">
+                    <input type="color" id="color-fg" value="#000000" onchange="document.getElementById('hex-fg').innerText = this.value.toUpperCase()">
                 </div>
             </div>
 
@@ -227,7 +204,7 @@
                 <label>Màu nền sau (Background)</label>
                 <div class="color-picker-wrapper">
                     <span class="color-hex" id="hex-bg">#FFFFFF</span>
-                    <input type="color" id="color-bg" value="#ffffff" onchange="document.getElementById('hex-bg').innerText = this.value">
+                    <input type="color" id="color-bg" value="#ffffff" onchange="document.getElementById('hex-bg').innerText = this.value.toUpperCase()">
                 </div>
             </div>
 
@@ -238,7 +215,6 @@
 
             <div class="form-group" style="margin-top: 25px;">
                 <label>Mức độ sửa lỗi (Error Correction)</label>
-                <div class="note" style="margin-bottom: 10px;">Mức độ cao hơn (H) cho phép QR hoạt động ngay cả khi bị che khuất một phần (Dùng khi chèn logo).</div>
                 <div class="ec-buttons">
                     <button class="ec-btn" onclick="setEC('L', this)">L (7%)</button>
                     <button class="ec-btn" onclick="setEC('M', this)">M (15%)</button>
@@ -248,8 +224,8 @@
             </div>
 
             <div class="form-group" style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
-                <label>Chèn Logo vào giữa (Tùy chọn)</label>
-                <input type="file" id="logo-input" accept="image/png, image/jpeg" style="font-size: 14px; margin-top: 5px;">
+                <label>Chèn Logo (Tùy chọn)</label>
+                <input type="file" id="logo-input" accept="image/png, image/jpeg" style="font-size: 14px; margin-top: 5px; padding: 8px;">
             </div>
         </div>
 
@@ -259,32 +235,31 @@
     <div class="right-panel">
         <div class="card" style="text-align: center;">
             <div class="qr-display-area">
-                <div id="qrcode-hidden"></div> <canvas id="finalCanvas" width="300" height="300"></canvas> </div>
+                <div id="qrcode-hidden"></div>
+                <canvas id="finalCanvas" width="300" height="300"></canvas>
+            </div>
             <button class="btn-action" id="btn-download" style="background: #007bff; display: none;" onclick="downloadQR()">Tải xuống (PNG)</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- KHỞI TẠO TRẠNG THÁI ---
     let currentTab = 'url';
     let currentEC = QRCode.CorrectLevel.H;
     let selectedLogo = null;
     let finalCanvas = document.getElementById("finalCanvas");
     let ctx = finalCanvas.getContext("2d");
 
-    // --- XỬ LÝ GIAO DIỆN TABS ---
-    function switchTab(tabId) {
+    // Fix lỗi chuyển tab: truyền trực tiếp event (e) vào hàm để xác định chính xác nút được nhấn
+    function switchTab(e, tabId) {
         currentTab = tabId;
-        // Đổi active class cho button
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-        // Đổi active class cho nội dung
+        e.currentTarget.classList.add('active'); // Đã thay thế event.target bằng e.currentTarget
+        
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById('tab-' + tabId).classList.add('active');
     }
 
-    // --- XỬ LÝ MỨC ĐỘ SỬA LỖI ---
     function setEC(levelStr, btnElement) {
         document.querySelectorAll('.ec-btn').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
@@ -296,7 +271,6 @@
         }
     }
 
-    // --- XỬ LÝ LOGO UPLOAD ---
     document.getElementById('logo-input').addEventListener('change', function(e) {
         let file = e.target.files[0];
         if(!file) { selectedLogo = null; return; }
@@ -308,23 +282,42 @@
         reader.readAsDataURL(file);
     });
 
-    // --- HÀM TẠO MÃ QR CHÍNH ---
+    // Ép kiểu chuỗi hỗ trợ tiếng Việt có dấu (UTF-8) cho thư viện qrcodejs
+    function toUTF8(str) {
+        return unescape(encodeURIComponent(str));
+    }
+
     function generateQR() {
-        // 1. Thu thập dữ liệu đầu vào dựa trên Tab hiện tại
         let dataToEncode = "";
+        
+        // 1. Thu thập dữ liệu theo Tab
         if (currentTab === 'url') {
             dataToEncode = document.getElementById('input-url').value.trim();
-        } else if (currentTab === 'pdf') {
-            dataToEncode = document.getElementById('input-pdf').value.trim();
-        } else if (currentTab === 'image') {
-            dataToEncode = document.getElementById('input-image').value.trim();
-        } else if (currentTab === 'vcard') {
+        } 
+        else if (currentTab === 'vcard') {
             let name = document.getElementById('vc-name').value.trim();
             let phone = document.getElementById('vc-phone').value.trim();
             let email = document.getElementById('vc-email').value.trim();
             let org = document.getElementById('vc-org').value.trim();
-            if(!name) { alert("Vui lòng nhập ít nhất Họ và Tên cho VCard."); return; }
-            dataToEncode = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nORG:${org}\nTEL:${phone}\nEMAIL:${email}\nEND:VCARD`;
+            if(!name) { alert("Vui lòng nhập Họ và Tên cho VCard."); return; }
+            // Chuẩn hóa định dạng VCard
+            let vcardStr = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${name}\r\nORG:${org}\r\nTEL;TYPE=WORK,VOICE:${phone}\r\nEMAIL:${email}\r\nEND:VCARD`;
+            dataToEncode = toUTF8(vcardStr);
+        }
+        else if (currentTab === 'wifi') {
+            let ssid = document.getElementById('wifi-ssid').value.trim();
+            let pass = document.getElementById('wifi-pass').value;
+            let type = document.getElementById('wifi-type').value;
+            let hidden = document.getElementById('wifi-hidden').checked ? 'true' : 'false';
+            if(!ssid) { alert("Vui lòng nhập Tên mạng Wifi (SSID)."); return; }
+            // Cấu trúc chuẩn của QR Wifi
+            let wifiStr = `WIFI:T:${type};S:${ssid};P:${pass};H:${hidden};;`;
+            dataToEncode = toUTF8(wifiStr);
+        }
+        else if (currentTab === 'phone') {
+            let phone = document.getElementById('input-phone').value.trim();
+            if(!phone) { alert("Vui lòng nhập số điện thoại."); return; }
+            dataToEncode = `tel:${phone}`;
         }
 
         if (!dataToEncode) { alert("Vui lòng nhập dữ liệu để tạo mã."); return; }
@@ -334,18 +327,16 @@
         let bgColor = document.getElementById('color-bg').value;
         let qrSize = parseInt(document.getElementById('size-slider').value);
 
-        // Yêu cầu 1: Bổ sung Margin (Khoảng trắng viền ngoài). Cố định padding là 10% kích thước
         let padding = Math.floor(qrSize * 0.1); 
         let innerSize = qrSize - (padding * 2);
 
-        // Cập nhật kích thước Canvas hiển thị
         finalCanvas.width = qrSize;
         finalCanvas.height = qrSize;
 
         let qrHiddenContainer = document.getElementById("qrcode-hidden");
-        qrHiddenContainer.innerHTML = ""; // Xóa QR cũ
+        qrHiddenContainer.innerHTML = ""; 
 
-        // 3. Khởi tạo mã QR bằng thư viện (Chỉ tạo phần lõi innerSize)
+        // 3. Khởi tạo mã QR
         new QRCode(qrHiddenContainer, {
             text: dataToEncode,
             width: innerSize,
@@ -355,9 +346,8 @@
             correctLevel: currentEC
         });
 
-        // 4. Vẽ lên Canvas chính sau khi tạo xong
+        // 4. Vẽ hiển thị
         setTimeout(() => {
-            // Tô màu nền cho toàn bộ Canvas (Bao gồm cả phần Margin)
             ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
@@ -367,18 +357,15 @@
                  if(qrImgSource) ctx.drawImage(qrImgSource, padding, padding, innerSize, innerSize);
                  else return;
             } else {
-                 // Vẽ lõi QR vào giữa, chừa lại khoảng padding làm Margin
                  ctx.drawImage(qrCanvasSource, padding, padding, innerSize, innerSize);
             }
 
-            // 5. Vẽ Logo nếu có
+            // Vẽ Logo nếu có
             if (selectedLogo && selectedLogo.complete) {
-                // Kích thước logo = 20% kích thước tổng để không che mất quá nhiều dữ liệu
                 let logoSize = Math.floor(qrSize * 0.22); 
                 let x = (qrSize - logoSize) / 2;
                 let y = (qrSize - logoSize) / 2;
 
-                // Bo tròn góc và nền cho logo
                 ctx.fillStyle = bgColor;
                 ctx.beginPath();
                 ctx.roundRect(x - 4, y - 4, logoSize + 8, logoSize + 8, 8);
@@ -386,12 +373,10 @@
                 ctx.drawImage(selectedLogo, x, y, logoSize, logoSize);
             }
 
-            // Hiển thị nút tải
             document.getElementById("btn-download").style.display = "block";
         }, 150);
     }
 
-    // --- TẢI XUỐNG ---
     function downloadQR() {
         let imageURL = finalCanvas.toDataURL("image/png");
         let downloadLink = document.createElement("a");
@@ -402,7 +387,6 @@
         document.body.removeChild(downloadLink);
     }
 
-    // Polyfill roundRect
     if (!HTMLCanvasElement.prototype.roundRect) {
         CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
             if (w < 2 * r) r = w / 2; if (h < 2 * r) r = h / 2;
