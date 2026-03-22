@@ -4,151 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Tạo Mã QR Học Liệu</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
-        /* Cấu trúc hiển thị toàn trang (Dành riêng cho phiên bản chạy độc lập) */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #eef2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .app-container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            text-align: center;
-            width: 100%;
-            max-width: 480px;
-            box-sizing: border-box;
-        }
-        h2 {
-            color: #2c3e50;
-            margin-top: 0;
-            margin-bottom: 25px;
-            font-size: 24px;
-            line-height: 1.4;
-        }
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            text-align: left;
-        }
-        .control-group {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f8f9fa;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            font-size: 15px;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
-        input[type="text"]:focus {
-            border-color: #3498db;
-            outline: none;
-        }
-        input[type="file"] {
-            font-size: 13px;
-            width: 65%;
-        }
-        input[type="color"] {
-            border: none;
-            width: 40px;
-            height: 30px;
-            cursor: pointer;
-            background: none;
-        }
-        label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #495057;
-        }
-        button.btn-primary {
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 25px;
-            width: 100%;
-            transition: background-color 0.2s;
-        }
-        button.btn-primary:hover {
-            background-color: #2980b9;
-        }
-        #canvas-container {
-            margin-top: 30px;
-            display: flex;
-            justify-content: center;
-            position: relative;
-        }
-        #finalCanvas {
-            border: 1px dashed #ced4da;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            max-width: 100%;
-            height: auto;
-        }
-        #qrcode {
-            display: none; /* Ẩn thẻ div chứa QR gốc để chỉ hiện Canvas đã ghép logo */
-        }
-        button#downloadBtn {
-            background-color: #27ae60;
-            display: none;
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            margin-top: 20px;
-            width: 100%;
-            transition: background-color 0.2s;
-        }
-        button#downloadBtn:hover {
-            background-color: #1e8449;
-        }
-        .footer-note {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #6c757d;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f3f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .app-container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; width: 100%; max-width: 480px; box-sizing: border-box; }
+        h2 { color: #2c3e50; margin-top: 0; margin-bottom: 25px; font-size: 24px; }
+        .controls { display: flex; flex-direction: column; gap: 15px; text-align: left; }
+        .control-group { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+        input[type="text"] { width: 100%; padding: 12px 15px; border: 1px solid #ced4da; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+        input[type="file"] { font-size: 13px; width: 65%; }
+        input[type="color"] { border: none; width: 40px; height: 30px; cursor: pointer; }
+        label { font-size: 14px; font-weight: 600; color: #495057; }
+        button.btn-primary { background-color: #3498db; color: #fff; border: none; padding: 14px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 25px; width: 100%; }
+        button.btn-primary:hover { background-color: #2980b9; }
+        #canvas-container { margin-top: 30px; display: flex; justify-content: center; position: relative; }
+        #finalCanvas { border: 1px dashed #ced4da; padding: 10px; background-color: #fff; border-radius: 8px; max-width: 100%; height: auto; }
+        #qrcode-hidden { display: none; } /* Khung ẩn để thư viện vẽ QR */
+        button#downloadBtn { background-color: #27ae60; display: none; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; margin-top: 20px; width: 100%; }
+        button#downloadBtn:hover { background-color: #1e8449; }
+        .footer-note { margin-top: 20px; font-size: 12px; color: #6c757d; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <h2>Trình Khởi Tạo Mã QR Học Liệu</h2>
-    
     <div class="controls">
         <input type="text" id="text-input" placeholder="Nhập đường dẫn URL của tài liệu, video..." />
-        
         <div class="control-group">
             <label for="color-input">Màu sắc mã QR:</label>
             <input type="color" id="color-input" value="#000000">
         </div>
-
         <div class="control-group">
             <label for="logo-input">Chèn Logo (Tùy chọn):</label>
             <input type="file" id="logo-input" accept="image/png, image/jpeg" />
@@ -158,14 +44,14 @@
     <button class="btn-primary" onclick="generateAdvancedQR()">Tạo Mã QR</button>
     
     <div id="canvas-container">
-        <div id="qrcode"></div>
+        <div id="qrcode-hidden"></div>
         <canvas id="finalCanvas" width="250" height="250"></canvas>
     </div>
     
     <button id="downloadBtn" onclick="downloadAdvancedQR()">Tải Mã QR (Định dạng PNG)</button>
     
     <div class="footer-note">
-        Hệ thống xử lý dữ liệu trực tiếp trên trình duyệt. Đảm bảo an toàn thông tin tuyệt đối.
+        Hệ thống xử lý dữ liệu trực tiếp trên trình duyệt.
     </div>
 </div>
 
@@ -173,36 +59,90 @@
     let finalCanvas = document.getElementById("finalCanvas");
     let ctx = finalCanvas.getContext("2d");
     let selectedLogo = null;
+    let qrGenerator = null;
 
-    // Lắng nghe sự kiện người dùng tải logo lên
+    // Lắng nghe sự kiện tải logo
     document.getElementById('logo-input').addEventListener('change', function(e) {
+        let file = e.target.files[0];
+        if(!file) return;
+        
         let reader = new FileReader();
         reader.onload = function(event) {
             selectedLogo = new Image();
+            selectedLogo.onload = function() {
+                // Đã tải xong logo, sẵn sàng vẽ
+            };
+            selectedLogo.onerror = function() {
+                alert("Lỗi tải tệp tin logo. Vui lòng chọn tệp tin ảnh hợp lệ.");
+                selectedLogo = null;
+            }
             selectedLogo.src = event.target.result;
         }
-        if(e.target.files[0]) {
-            reader.readAsDataURL(e.target.files[0]);
-        }
+        reader.readAsDataURL(file);
     });
+
+    // Hàm vẽ cuối cùng lên canvas chính
+    function drawFinalCanvas() {
+        // 1. Xóa sạch canvas cũ
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+        // 2. Lấy canvas chứa QR ẩn
+        let qrContainer = document.getElementById("qrcode-hidden");
+        let qrCanvasSource = qrContainer.querySelector('canvas');
+        
+        if (!qrCanvasSource) {
+            // Trường hợp qrcode.js vẽ ra thẻ <img> thay vì <canvas> (trình duyệt cũ)
+            let qrImgSource = qrContainer.querySelector('img');
+            if(qrImgSource) {
+                 ctx.drawImage(qrImgSource, 0, 0, finalCanvas.width, finalCanvas.height);
+            } else {
+                 alert("Lỗi: Không thể lấy dữ liệu mã QR.");
+                 return;
+            }
+        } else {
+            // Vẽ QR chính lên canvas
+            ctx.drawImage(qrCanvasSource, 0, 0, finalCanvas.width, finalCanvas.height);
+        }
+
+        // 3. Nếu có logo, vẽ đè lên tâm mã QR
+        if (selectedLogo && selectedLogo.complete) {
+            const logoWidth = 65; // Kích thước logo trên canvas 250x250
+            const logoHeight = 65;
+            const x = (finalCanvas.width - logoWidth) / 2;
+            const y = (finalCanvas.height - logoHeight) / 2;
+
+            // Vẽ viền trắng bo góc bảo vệ logo
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.roundRect(x - 3, y - 3, logoWidth + 6, logoHeight + 6, 10);
+            ctx.fill();
+
+            // Chèn ảnh logo
+            ctx.drawImage(selectedLogo, x, y, logoWidth, logoHeight);
+        }
+
+        // 4. Hiển thị nút tải về
+        document.getElementById("downloadBtn").style.display = "block";
+    }
 
     function generateAdvancedQR() {
         let inputText = document.getElementById("text-input").value.trim();
         let qrColor = document.getElementById("color-input").value;
-        let qrContainer = document.getElementById("qrcode");
+        let qrHiddenContainer = document.getElementById("qrcode-hidden");
         
         if (!inputText) {
             alert("Vui lòng nhập đường dẫn hoặc văn bản để tạo mã QR.");
             return;
         }
 
-        // Xóa dữ liệu cũ trước khi tạo mới
-        qrContainer.innerHTML = "";
+        // 1. Xóa dữ liệu cũ
+        qrHiddenContainer.innerHTML = "";
         ctx.clearRect(0, 0, finalCanvas.width, finalCanvas.height);
         document.getElementById("downloadBtn").style.display = "none";
 
-        // Khởi tạo mã QR cơ bản với mức phục hồi lỗi cao (H - 30%)
-        let qrcode = new QRCode(qrContainer, {
+        // 2. Tạo mã QR cơ bản trong div ẩn (dùng mức sửa lỗi H để chèn logo an toàn)
+        qrGenerator = new QRCode(qrHiddenContainer, {
             text: inputText,
             width: 250,
             height: 250,
@@ -211,42 +151,37 @@
             correctLevel: QRCode.CorrectLevel.H
         });
 
-        // Chờ thư viện kết xuất QR xong, sau đó vẽ lên Canvas chính
-        setTimeout(() => {
-            let qrCanvas = qrContainer.querySelector('canvas');
-            
-            if (qrCanvas) {
-                // Vẽ mã QR
-                ctx.drawImage(qrCanvas, 0, 0);
-
-                // Vẽ Logo đè lên tâm mã QR nếu có
-                if (selectedLogo) {
-                    const logoWidth = 60; // Kích thước logo
-                    const logoHeight = 60;
-                    const x = (finalCanvas.width - logoWidth) / 2;
-                    const y = (finalCanvas.height - logoHeight) / 2;
-
-                    // Vẽ viền trắng bo góc bảo vệ logo
-                    ctx.fillStyle = "#ffffff";
-                    ctx.beginPath();
-                    ctx.roundRect(x - 3, y - 3, logoWidth + 6, logoHeight + 6, 8);
-                    ctx.fill();
-
-                    // Chèn ảnh logo
-                    ctx.drawImage(selectedLogo, x, y, logoWidth, logoHeight);
-                }
-
-                // Hiển thị nút tải về
-                document.getElementById("downloadBtn").style.display = "block";
-            }
-        }, 500);
+        // 3. Chờ thư viện xử lý xong và vẽ lên canvas chính
+        // Ta sử dụng setTimeout ngắn (100ms) để đảm bảo qrcode.js đã render xong div ẩn
+        setTimeout(drawFinalCanvas, 100);
     }
 
     function downloadAdvancedQR() {
+        // Đảm bảo dữ liệu trên canvas là mới nhất trước khi tải
         let imageURL = finalCanvas.toDataURL("image/png");
         let downloadLink = document.createElement("a");
         downloadLink.href = imageURL;
         downloadLink.download = "Ma_QR_Hoc_Lieu.png";
         document.body.appendChild(downloadLink);
         downloadLink.click();
-        document.body.removeChild(download
+        document.body.removeChild(downloadLink);
+    }
+
+    // Polyfill vẽ roundRect cho trình duyệt cũ
+    if (!HTMLCanvasElement.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.moveTo(x + r, y);
+            this.arcTo(x + w, y, x + w, y + h, r);
+            this.arcTo(x + w, y + h, x, y + h, r);
+            this.arcTo(x, y + h, x, y, r);
+            this.arcTo(x, y, x + w, y, r);
+            this.closePath();
+            return this;
+        }
+    }
+</script>
+
+</body>
+</html>
