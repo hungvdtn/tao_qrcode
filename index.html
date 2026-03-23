@@ -144,9 +144,11 @@
 
             <div id="tab-vcard" class="tab-content">
                 <div class="form-group"><label>Họ và Tên (*)</label><input type="text" id="vc-name" placeholder="VD: Vũ Xuân Hùng"></div>
-                <div class="form-group"><label>Số điện thoại</label><input type="tel" id="vc-phone" placeholder="VD: 0988593845"></div>
-                <div class="form-group"><label>Email</label><input type="email" id="vc-email" placeholder="VD: trinhvuanhxuan@gmail.com"></div>
+                <div class="form-group"><label>Chức vụ</label><input type="text" id="vc-title" placeholder="VD: Chuyên gia Cao cấp"></div>
+                <div class="form-group"><label>Số điện thoại</label><input type="tel" id="vc-phone" placeholder="VD: 0988xxxxxx"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="vc-email" placeholder="VD: email@domain.com"></div>
                 <div class="form-group"><label>Cơ quan / Tổ chức</label><input type="text" id="vc-org" placeholder="VD: Bộ Nội vụ"></div>
+                <div class="form-group"><label>Địa chỉ</label><input type="text" id="vc-address" placeholder="VD: Khu Rainbow Linh Đàm, Hà Nội"></div>
             </div>
 
             <div id="tab-wifi" class="tab-content">
@@ -257,7 +259,7 @@
         reader.readAsDataURL(file);
     });
 
-    // Ép kiểu chuẩn Quốc tế (UTF-8) để đọc trơn tru Tiếng Việt có dấu
+    // Ép kiểu chuẩn Quốc tế (UTF-8)
     function toUTF8(str) {
         return unescape(encodeURIComponent(str));
     }
@@ -271,17 +273,29 @@
         } 
         else if (currentTab === 'vcard') {
             let name = document.getElementById('vc-name').value.trim();
+            let title = document.getElementById('vc-title').value.trim();
             let phone = document.getElementById('vc-phone').value.trim();
             let email = document.getElementById('vc-email').value.trim();
             let org = document.getElementById('vc-org').value.trim();
+            let address = document.getElementById('vc-address').value.trim();
             
             if(!name) { alert("Vui lòng nhập Họ và Tên cho VCard."); return; }
             
-            // Xây dựng VCard tinh gọn, loại bỏ các trường trống
-            let vcardArr = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + name];
-            if (org) vcardArr.push("ORG:" + org);
+            // Ép hệ thống định danh đây là danh bạ cá nhân bằng thuộc tính N
+            let vcardArr = [
+                "BEGIN:VCARD", 
+                "VERSION:3.0", 
+                "N;CHARSET=UTF-8:;" + name + ";;;", // Định nghĩa dạng Tên 
+                "FN;CHARSET=UTF-8:" + name         // Tên hiển thị đầy đủ
+            ];
+            
+            // Các trường tùy chọn
+            if (title) vcardArr.push("TITLE;CHARSET=UTF-8:" + title);
+            if (org) vcardArr.push("ORG;CHARSET=UTF-8:" + org);
+            if (address) vcardArr.push("ADR;CHARSET=UTF-8:;;" + address + ";;;;");
             if (phone) vcardArr.push("TEL;TYPE=WORK,VOICE:" + phone);
             if (email) vcardArr.push("EMAIL:" + email);
+            
             vcardArr.push("END:VCARD");
             dataToEncode = vcardArr.join("\n");
         }
@@ -301,39 +315,32 @@
 
         if (!dataToEncode) { alert("Vui lòng nhập dữ liệu để tạo mã."); return; }
 
-        // --- 2. THUẬT TOÁN VẼ LÕI (CORE RENDER) ---
+        // --- 2. THUẬT TOÁN VẼ LÕI ---
         let fgColor = document.getElementById('color-fg').value;
         let bgColor = document.getElementById('color-bg').value;
         let qrSize = parseInt(document.getElementById('size-slider').value);
 
-        // Thiết lập kích thước Canvas
         finalCanvas.width = qrSize;
         finalCanvas.height = qrSize;
 
-        // Tính toán khoảng trắng an toàn (Margin) bằng 10%
         let padding = Math.floor(qrSize * 0.1); 
         let innerSize = qrSize - (padding * 2);
 
         try {
-            // Khởi tạo thuật toán Kazuhiko Arase (0 = Tự động tính toán dung lượng)
             var qr = qrcode(0, currentEC);
             qr.addData(toUTF8(dataToEncode));
             qr.make();
 
-            // Lấy thông số ma trận
             var moduleCount = qr.getModuleCount();
             var cellSize = innerSize / moduleCount;
 
-            // Tô toàn bộ nền
             ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-            // Tự tay vẽ từng điểm ảnh của mã QR (Đảm bảo độ nét tuyệt đối)
             ctx.fillStyle = fgColor;
             for (var r = 0; r < moduleCount; r++) {
                 for (var c = 0; c < moduleCount; c++) {
                     if (qr.isDark(r, c)) {
-                        // Tính toán tọa độ chính xác để không bị kẽ hở vỡ nét
                         var x = padding + Math.round(c * cellSize);
                         var y = padding + Math.round(r * cellSize);
                         var w = Math.round((c + 1) * cellSize) - Math.round(c * cellSize);
@@ -343,19 +350,16 @@
                 }
             }
 
-            // Chèn Logo lên trên cùng
             if (selectedLogo && selectedLogo.complete) {
                 let logoSize = Math.floor(qrSize * 0.22); 
                 let x = (qrSize - logoSize) / 2;
                 let y = (qrSize - logoSize) / 2;
 
-                // Nền bo tròn bảo vệ logo
                 ctx.fillStyle = bgColor;
                 ctx.beginPath();
                 ctx.roundRect(x - 4, y - 4, logoSize + 8, logoSize + 8, 8);
                 ctx.fill();
                 
-                // Vẽ logo
                 ctx.drawImage(selectedLogo, x, y, logoSize, logoSize);
             }
 
