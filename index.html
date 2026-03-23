@@ -107,7 +107,7 @@
         .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-action:hover { background: var(--primary-hover); }
 
-        .qr-display-area { display: flex; justify-content: center; align-items: center; min-height: 400px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; margin-bottom: 20px; padding: 20px;}
+        .qr-display-area { display: flex; justify-content: center; align-items: center; min-height: 400px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; margin-bottom: 20px; padding: 20px; position: relative;}
         #finalCanvas { max-width: 100%; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px; }
 
         @media (max-width: 900px) {
@@ -180,8 +180,11 @@
                 <label>Khung mã QR</label>
                 <select id="frame-style" onchange="generateQR()">
                     <option value="none">Không có khung (Cơ bản)</option>
-                    <option value="border">Khung viền nổi bật</option>
-                    <option value="scan-bottom">Khung có chữ "QUÉT MÃ" bên dưới</option>
+                    <option value="border">Khung viền nổi bật (Simple Border)</option>
+                    <option value="scan-white-black">Khung có chữ "QUÉT MÃ" (Trắng trên Đen)</option>
+                    <option value="scan-black-white">Khung có chữ "QUÉT MÃ" (Đen trên Trắng)</option>
+                    <option value="download-app">Khung có chữ "TẢI ỨNG DỤNG" (Tài liệu)</option>
+                    <option value="pin-drop">Khung Pin-drop / Bong bóng thoại</option>
                 </select>
             </div>
 
@@ -343,7 +346,7 @@
             dataToEncode = DEFAULT_QR_TEXT;
         }
 
-        // --- 2. THUẬT TOÁN VẼ ĐỒ HỌA & KHUNG VIỀN ---
+        // --- 2. THUẬT TOÁN VẼ ĐỒ HỌA & KHUNG VIỀN MỚI ---
         let fgColor = document.getElementById('color-fg').value;
         let bgColor = document.getElementById('color-bg').value;
         let coreSize = parseInt(document.getElementById('size-slider').value);
@@ -355,16 +358,38 @@
         let offsetX = 0; // Tọa độ x bắt đầu vẽ mã QR lõi
         let offsetY = 0; // Tọa độ y bắt đầu vẽ mã QR lõi
 
-        if (frameStyle === 'border') {
-            canvasW = coreSize + 40;
-            canvasH = coreSize + 40;
-            offsetX = 20;
-            offsetY = 20;
-        } else if (frameStyle === 'scan-bottom') {
-            canvasW = coreSize + 40;
-            canvasH = coreSize + 90; // Mở rộng thêm phần đáy cho chữ
-            offsetX = 20;
-            offsetY = 20;
+        // Xử lý logic và kích thước cho từng kiểu khung
+        switch(frameStyle) {
+            case 'border':
+                canvasW = coreSize + 40;
+                canvasH = coreSize + 40;
+                offsetX = 20;
+                offsetY = 20;
+                break;
+            case 'scan-white-black':
+            case 'scan-black-white':
+                canvasW = coreSize + 40;
+                canvasH = coreSize + 100; // Mở rộng thêm phần đáy cho chữ
+                offsetX = 20;
+                offsetY = 20;
+                break;
+            case 'download-app':
+                canvasW = coreSize + 40;
+                canvasH = coreSize + 110; // Mở rộng thêm cho chữ dài hơn
+                offsetX = 20;
+                offsetY = 20;
+                break;
+            case 'pin-drop':
+                canvasW = coreSize + 40;
+                canvasH = coreSize + 100;
+                offsetX = 20;
+                offsetY = 20;
+                break;
+            default: // none
+                canvasW = coreSize;
+                canvasH = coreSize;
+                offsetX = 0;
+                offsetY = 0;
         }
 
         finalCanvas.width = canvasW;
@@ -385,6 +410,7 @@
             // XÓA VÀ VẼ LỚP NỀN THEO KHUNG
             ctx.clearRect(0, 0, canvasW, canvasH);
             
+            // Logic vẽ khung viền chuyên nghiệp lấy cảm hứng từ thư viện mẫu
             if (frameStyle === 'border') {
                 // Khung viền màu
                 ctx.fillStyle = fgColor;
@@ -394,7 +420,7 @@
                 ctx.fillStyle = bgColor;
                 ctx.roundRect(8, 8, canvasW - 16, canvasH - 16, 10);
                 ctx.fill();
-            } else if (frameStyle === 'scan-bottom') {
+            } else if (frameStyle === 'scan-white-black') {
                 // Khung lớn màu
                 ctx.fillStyle = fgColor;
                 ctx.roundRect(0, 0, canvasW, canvasH, 15);
@@ -403,15 +429,71 @@
                 ctx.fillStyle = bgColor;
                 ctx.roundRect(8, 8, canvasW - 16, coreSize + 8, 10);
                 ctx.fill();
-                
-                // Vẽ chữ QUÉT MÃ ở phần viền đáy
-                ctx.fillStyle = bgColor; 
-                ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
+                // Vẽ chữ "QUÉT MÃ" Trắng trên Đen bên dưới viền đáy
+                ctx.fillStyle = bgColor; // Chữ trắng
+                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 55);
-            } else {
-                // Không khung
+            } else if (frameStyle === 'scan-black-white') {
+                // Khung lớn nền trắng
+                ctx.fillStyle = bgColor;
+                ctx.roundRect(0, 0, canvasW, canvasH, 15);
+                ctx.fill();
+                // Khung viền mỏng màu
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = fgColor;
+                ctx.roundRect(4, 4, canvasW - 8, canvasH - 8, 11);
+                ctx.stroke();
+                // Hộp đen chứa chữ bên dưới
+                ctx.fillStyle = fgColor;
+                ctx.roundRect(8, coreSize + 12, canvasW - 16, canvasH - coreSize - 20, 8);
+                ctx.fill();
+                // Vẽ chữ "QUÉT MÃ" Trắng trên Đen
+                ctx.fillStyle = bgColor; 
+                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 55);
+            } else if (frameStyle === 'download-app') {
+                // Khung lớn màu
+                ctx.fillStyle = fgColor;
+                ctx.roundRect(0, 0, canvasW, canvasH, 15);
+                ctx.fill();
+                // Nền trắng chứa QR
+                ctx.fillStyle = bgColor;
+                ctx.roundRect(8, 8, canvasW - 16, coreSize + 8, 10);
+                ctx.fill();
+                // Vẽ chữ "TẢI ỨNG DỤNG" Trắng trên Đen
+                ctx.fillStyle = bgColor;
+                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("TẢI ỨNG DỤNG", canvasW / 2, coreSize + 60);
+            } else if (frameStyle === 'pin-drop') {
+                // Không nền, không khung, vẽ một "cuống" bong bóng thoại bên dưới
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, canvasW, canvasH);
+                // Vẽ cuống bong bóng thoại bằng màu mã
+                ctx.fillStyle = fgColor;
+                ctx.beginPath();
+                ctx.roundRect(offsetX, offsetY + coreSize - padding/2, innerSize + padding, 70, 10);
+                ctx.fill();
+                // Tam giác nhỏ ở tâm để tạo hiệu ứng pin-drop
+                ctx.beginPath();
+                ctx.moveTo(canvasW/2, canvasH - 10);
+                ctx.lineTo(canvasW/2 - 15, canvasH - 40);
+                ctx.lineTo(canvasW/2 + 15, canvasH - 40);
+                ctx.closePath();
+                ctx.fill();
+                // Vẽ chữ "QUÉT MÃ" Trắng bên trong cuống
+                ctx.fillStyle = bgColor;
+                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("QUÉT MÃ", canvasW / 2, canvasH - 60);
+            } else { // none
+                // Không khung, tô nền tổng thể
                 ctx.fillStyle = bgColor;
                 ctx.fillRect(0, 0, canvasW, canvasH);
             }
@@ -430,7 +512,7 @@
                 }
             }
 
-            // CHÈN LOGO
+            // CHÈN LOGO (Nằm trung tâm của mã lõi)
             if (selectedLogo && selectedLogo.complete) {
                 let logoSize = Math.floor(coreSize * 0.22); 
                 let x = offsetX + (coreSize - logoSize) / 2;
