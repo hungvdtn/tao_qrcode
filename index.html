@@ -183,7 +183,7 @@
                     <option value="border">Khung viền nổi bật (Simple Border)</option>
                     <option value="scan-white-black">Khung có chữ "QUÉT MÃ" (Trắng trên Đen)</option>
                     <option value="scan-black-white">Khung có chữ "QUÉT MÃ" (Đen trên Trắng)</option>
-                    <option value="download-app">Khung có chữ "TẢI ỨNG DỤNG" (Tài liệu)</option>
+                    <option value="download-app">Khung có chữ "TẢI ỨNG DỤNG" (Trắng trên Đen)</option>
                     <option value="pin-drop">Khung Pin-drop / Bong bóng thoại</option>
                 </select>
             </div>
@@ -247,13 +247,9 @@
     let finalCanvas = document.getElementById("finalCanvas");
     let ctx = finalCanvas.getContext("2d");
 
-    // Hằng số chứa nội dung mặc định khi người dùng xóa trắng dữ liệu
     const DEFAULT_QR_TEXT = "https://lamchuaigiaoduc.vn";
 
-    // Khởi chạy ngay lần đầu tiên mở web
-    window.onload = function() {
-        generateQR();
-    };
+    window.onload = function() { generateQR(); };
 
     function switchTab(e, tabId) {
         currentTab = tabId;
@@ -263,7 +259,6 @@
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById('tab-' + tabId).classList.add('active');
         
-        // Cập nhật lại QR theo dữ liệu của Tab mới
         generateQR();
     }
 
@@ -294,262 +289,8 @@
         return unescape(encodeURIComponent(str));
     }
 
-    // Hàm Tạo mã tổng hợp (Chạy liên tục theo thời gian thực)
-    function generateQR() {
-        let dataToEncode = "";
-        
-        // --- 1. LẤY DỮ LIỆU ĐỘNG ---
-        if (currentTab === 'url') {
-            dataToEncode = document.getElementById('input-url').value.trim();
-        } 
-        else if (currentTab === 'vcard') {
-            let name = document.getElementById('vc-name').value.trim();
-            let title = document.getElementById('vc-title').value.trim();
-            let phone = document.getElementById('vc-phone').value.trim();
-            let email = document.getElementById('vc-email').value.trim();
-            let org = document.getElementById('vc-org').value.trim();
-            let address = document.getElementById('vc-address').value.trim();
-            
-            if (name) { // Chỉ tạo VCard nếu có tên
-                let vcardArr = [
-                    "BEGIN:VCARD", "VERSION:3.0", 
-                    "N;CHARSET=UTF-8:;" + name + ";;;", 
-                    "FN;CHARSET=UTF-8:" + name          
-                ];
-                if (org) vcardArr.push("ORG;CHARSET=UTF-8:" + org);
-                if (title) vcardArr.push("TITLE;CHARSET=UTF-8:" + title);
-                if (phone) vcardArr.push("TEL;TYPE=CELL:" + phone);
-                if (email) vcardArr.push("EMAIL:" + email);
-                if (address) vcardArr.push("ADR;CHARSET=UTF-8:;;" + address + ";;;;");
-                vcardArr.push("END:VCARD");
-                dataToEncode = vcardArr.join("\n");
-            }
-        }
-        else if (currentTab === 'wifi') {
-            let ssid = document.getElementById('wifi-ssid').value.trim();
-            let pass = document.getElementById('wifi-pass').value;
-            let type = document.getElementById('wifi-type').value;
-            let hidden = document.getElementById('wifi-hidden').checked ? 'true' : 'false';
-            if (ssid) {
-                dataToEncode = `WIFI:T:${type};S:${ssid};P:${pass};H:${hidden};;`;
-            }
-        }
-        else if (currentTab === 'phone') {
-            let phone = document.getElementById('input-phone').value.trim();
-            if (phone) {
-                dataToEncode = `tel:${phone}`;
-            }
-        }
-
-        // Cơ chế Fallback: Nếu dữ liệu trống (Xóa hết hoặc chuyển Tab trắng), dùng mã Mặc định
-        if (!dataToEncode) { 
-            dataToEncode = DEFAULT_QR_TEXT;
-        }
-
-        // --- 2. THUẬT TOÁN VẼ ĐỒ HỌA & KHUNG VIỀN MỚI ---
-        let fgColor = document.getElementById('color-fg').value;
-        let bgColor = document.getElementById('color-bg').value;
-        let coreSize = parseInt(document.getElementById('size-slider').value);
-        let frameStyle = document.getElementById('frame-style').value;
-
-        // Tính toán kích thước tổng thể của Canvas phụ thuộc vào loại Khung
-        let canvasW = coreSize;
-        let canvasH = coreSize;
-        let offsetX = 0; // Tọa độ x bắt đầu vẽ mã QR lõi
-        let offsetY = 0; // Tọa độ y bắt đầu vẽ mã QR lõi
-
-        // Xử lý logic và kích thước cho từng kiểu khung
-        switch(frameStyle) {
-            case 'border':
-                canvasW = coreSize + 40;
-                canvasH = coreSize + 40;
-                offsetX = 20;
-                offsetY = 20;
-                break;
-            case 'scan-white-black':
-            case 'scan-black-white':
-                canvasW = coreSize + 40;
-                canvasH = coreSize + 100; // Mở rộng thêm phần đáy cho chữ
-                offsetX = 20;
-                offsetY = 20;
-                break;
-            case 'download-app':
-                canvasW = coreSize + 40;
-                canvasH = coreSize + 110; // Mở rộng thêm cho chữ dài hơn
-                offsetX = 20;
-                offsetY = 20;
-                break;
-            case 'pin-drop':
-                canvasW = coreSize + 40;
-                canvasH = coreSize + 100;
-                offsetX = 20;
-                offsetY = 20;
-                break;
-            default: // none
-                canvasW = coreSize;
-                canvasH = coreSize;
-                offsetX = 0;
-                offsetY = 0;
-        }
-
-        finalCanvas.width = canvasW;
-        finalCanvas.height = canvasH;
-
-        let padding = Math.floor(coreSize * 0.1); 
-        let innerSize = coreSize - (padding * 2);
-
-        try {
-            // Tính toán Ma trận mã QR
-            var qr = qrcode(0, currentEC);
-            qr.addData(toUTF8(dataToEncode));
-            qr.make();
-
-            var moduleCount = qr.getModuleCount();
-            var cellSize = innerSize / moduleCount;
-
-            // XÓA VÀ VẼ LỚP NỀN THEO KHUNG
-            ctx.clearRect(0, 0, canvasW, canvasH);
-            
-            // Logic vẽ khung viền chuyên nghiệp lấy cảm hứng từ thư viện mẫu
-            if (frameStyle === 'border') {
-                // Khung viền màu
-                ctx.fillStyle = fgColor;
-                ctx.roundRect(0, 0, canvasW, canvasH, 15);
-                ctx.fill();
-                // Nền trắng bên trong
-                ctx.fillStyle = bgColor;
-                ctx.roundRect(8, 8, canvasW - 16, canvasH - 16, 10);
-                ctx.fill();
-            } else if (frameStyle === 'scan-white-black') {
-                // Khung lớn màu
-                ctx.fillStyle = fgColor;
-                ctx.roundRect(0, 0, canvasW, canvasH, 15);
-                ctx.fill();
-                // Nền trắng chứa QR
-                ctx.fillStyle = bgColor;
-                ctx.roundRect(8, 8, canvasW - 16, coreSize + 8, 10);
-                ctx.fill();
-                // Vẽ chữ "QUÉT MÃ" Trắng trên Đen bên dưới viền đáy
-                ctx.fillStyle = bgColor; // Chữ trắng
-                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 55);
-            } else if (frameStyle === 'scan-black-white') {
-                // Khung lớn nền trắng
-                ctx.fillStyle = bgColor;
-                ctx.roundRect(0, 0, canvasW, canvasH, 15);
-                ctx.fill();
-                // Khung viền mỏng màu
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = fgColor;
-                ctx.roundRect(4, 4, canvasW - 8, canvasH - 8, 11);
-                ctx.stroke();
-                // Hộp đen chứa chữ bên dưới
-                ctx.fillStyle = fgColor;
-                ctx.roundRect(8, coreSize + 12, canvasW - 16, canvasH - coreSize - 20, 8);
-                ctx.fill();
-                // Vẽ chữ "QUÉT MÃ" Trắng trên Đen
-                ctx.fillStyle = bgColor; 
-                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 55);
-            } else if (frameStyle === 'download-app') {
-                // Khung lớn màu
-                ctx.fillStyle = fgColor;
-                ctx.roundRect(0, 0, canvasW, canvasH, 15);
-                ctx.fill();
-                // Nền trắng chứa QR
-                ctx.fillStyle = bgColor;
-                ctx.roundRect(8, 8, canvasW - 16, coreSize + 8, 10);
-                ctx.fill();
-                // Vẽ chữ "TẢI ỨNG DỤNG" Trắng trên Đen
-                ctx.fillStyle = bgColor;
-                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("TẢI ỨNG DỤNG", canvasW / 2, coreSize + 60);
-            } else if (frameStyle === 'pin-drop') {
-                // Không nền, không khung, vẽ một "cuống" bong bóng thoại bên dưới
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, canvasW, canvasH);
-                // Vẽ cuống bong bóng thoại bằng màu mã
-                ctx.fillStyle = fgColor;
-                ctx.beginPath();
-                ctx.roundRect(offsetX, offsetY + coreSize - padding/2, innerSize + padding, 70, 10);
-                ctx.fill();
-                // Tam giác nhỏ ở tâm để tạo hiệu ứng pin-drop
-                ctx.beginPath();
-                ctx.moveTo(canvasW/2, canvasH - 10);
-                ctx.lineTo(canvasW/2 - 15, canvasH - 40);
-                ctx.lineTo(canvasW/2 + 15, canvasH - 40);
-                ctx.closePath();
-                ctx.fill();
-                // Vẽ chữ "QUÉT MÃ" Trắng bên trong cuống
-                ctx.fillStyle = bgColor;
-                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("QUÉT MÃ", canvasW / 2, canvasH - 60);
-            } else { // none
-                // Không khung, tô nền tổng thể
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, canvasW, canvasH);
-            }
-
-            // VẼ MÃ QR VÀO ĐÚNG TỌA ĐỘ BÊN TRONG KHUNG
-            ctx.fillStyle = fgColor;
-            for (var r = 0; r < moduleCount; r++) {
-                for (var c = 0; c < moduleCount; c++) {
-                    if (qr.isDark(r, c)) {
-                        var x = offsetX + padding + Math.round(c * cellSize);
-                        var y = offsetY + padding + Math.round(r * cellSize);
-                        var w = Math.round((c + 1) * cellSize) - Math.round(c * cellSize);
-                        var h = Math.round((r + 1) * cellSize) - Math.round(r * cellSize);
-                        ctx.fillRect(x, y, w, h);
-                    }
-                }
-            }
-
-            // CHÈN LOGO (Nằm trung tâm của mã lõi)
-            if (selectedLogo && selectedLogo.complete) {
-                let logoSize = Math.floor(coreSize * 0.22); 
-                let x = offsetX + (coreSize - logoSize) / 2;
-                let y = offsetY + (coreSize - logoSize) / 2;
-
-                ctx.fillStyle = bgColor;
-                ctx.beginPath();
-                ctx.roundRect(x - 4, y - 4, logoSize + 8, logoSize + 8, 8);
-                ctx.fill();
-                
-                ctx.drawImage(selectedLogo, x, y, logoSize, logoSize);
-            }
-
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    function downloadQR() {
-        let imageURL = finalCanvas.toDataURL("image/png");
-        let downloadLink = document.createElement("a");
-        downloadLink.href = imageURL;
-        downloadLink.download = "AIBTeM_QRCode.png";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-    }
-
-    if (!HTMLCanvasElement.prototype.roundRect) {
-        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-            if (w < 2 * r) r = w / 2; if (h < 2 * r) r = h / 2;
-            this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r);
-            this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r);
-            this.arcTo(x, y, x + w, y, r); this.closePath(); return this;
-        }
-    }
-</script>
-
-</body>
-</html>
+    // --- HÀM VẼ GÓC BO TRÒN CHUYÊN DỤNG (Xóa bỏ lỗi dính lớp mảng màu) ---
+    function fillRoundRect(context, x, y, w, h, r, color) {
+        context.fillStyle = color;
+        context.beginPath();
+        context.moveTo
