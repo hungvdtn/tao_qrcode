@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRCODE - AIBTeM</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <style>
         /* ================= CẤU TRÚC TỔNG THỂ ================= */
         :root {
@@ -150,18 +150,12 @@
             </div>
 
             <div id="tab-wifi" class="tab-content">
-                <div class="form-group">
-                    <label>Tên mạng Wifi (SSID) (*)</label>
-                    <input type="text" id="wifi-ssid" placeholder="Nhập tên mạng Wifi...">
-                </div>
-                <div class="form-group">
-                    <label>Mật khẩu</label>
-                    <input type="password" id="wifi-pass" placeholder="Nhập mật khẩu (Để trống nếu mạng mở)...">
-                </div>
+                <div class="form-group"><label>Tên mạng Wifi (SSID) (*)</label><input type="text" id="wifi-ssid" placeholder="Nhập tên mạng Wifi..."></div>
+                <div class="form-group"><label>Mật khẩu</label><input type="password" id="wifi-pass" placeholder="Nhập mật khẩu (Để trống nếu mạng mở)..."></div>
                 <div class="form-group">
                     <label>Loại bảo mật</label>
                     <select id="wifi-type">
-                        <option value="WPA">WPA/WPA2 (Phổ biến nhất)</option>
+                        <option value="WPA">WPA/WPA2</option>
                         <option value="WEP">WEP</option>
                         <option value="nopass">Không có mật khẩu</option>
                     </select>
@@ -173,10 +167,7 @@
             </div>
 
             <div id="tab-phone" class="tab-content">
-                <div class="form-group">
-                    <label>Số điện thoại (*)</label>
-                    <input type="tel" id="input-phone" placeholder="VD: 0901234567">
-                </div>
+                <div class="form-group"><label>Số điện thoại (*)</label><input type="tel" id="input-phone" placeholder="VD: 0901234567"></div>
             </div>
         </div>
 
@@ -226,7 +217,6 @@
     <div class="right-panel">
         <div class="card" style="text-align: center;">
             <div class="qr-display-area">
-                <canvas id="qrcode-hidden" style="display: none;"></canvas>
                 <canvas id="finalCanvas" width="300" height="300"></canvas>
             </div>
             <button class="btn-action" id="btn-download" style="background: #007bff; display: none;" onclick="downloadQR()">Tải xuống (PNG)</button>
@@ -236,11 +226,10 @@
 
 <script>
     let currentTab = 'url';
-    let currentEC = 'H'; // Thư viện mới sử dụng trực tiếp chuỗi 'L', 'M', 'Q', 'H'
+    let currentEC = 'H';
     let selectedLogo = null;
     let finalCanvas = document.getElementById("finalCanvas");
     let ctx = finalCanvas.getContext("2d");
-    let hiddenCanvas = document.getElementById("qrcode-hidden");
 
     function switchTab(e, tabId) {
         currentTab = tabId;
@@ -268,10 +257,15 @@
         reader.readAsDataURL(file);
     });
 
+    // Ép kiểu chuẩn Quốc tế (UTF-8) để đọc trơn tru Tiếng Việt có dấu
+    function toUTF8(str) {
+        return unescape(encodeURIComponent(str));
+    }
+
     function generateQR() {
         let dataToEncode = "";
         
-        // --- 1. THU THẬP VÀ CHUẨN HÓA DỮ LIỆU ---
+        // --- 1. THU THẬP DỮ LIỆU ---
         if (currentTab === 'url') {
             dataToEncode = document.getElementById('input-url').value.trim();
         } 
@@ -283,18 +277,12 @@
             
             if(!name) { alert("Vui lòng nhập Họ và Tên cho VCard."); return; }
             
-            // Khởi tạo VCard động (Thư viện mới tự động xử lý UTF-8, không cần mã hóa thủ công)
-            let vcardArr = [
-                "BEGIN:VCARD",
-                "VERSION:3.0",
-                "FN;CHARSET=UTF-8:" + name,
-                "N;CHARSET=UTF-8:;" + name + ";;;"
-            ];
-            if (org) vcardArr.push("ORG;CHARSET=UTF-8:" + org);
+            // Xây dựng VCard tinh gọn, loại bỏ các trường trống
+            let vcardArr = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + name];
+            if (org) vcardArr.push("ORG:" + org);
             if (phone) vcardArr.push("TEL;TYPE=WORK,VOICE:" + phone);
             if (email) vcardArr.push("EMAIL:" + email);
             vcardArr.push("END:VCARD");
-            
             dataToEncode = vcardArr.join("\n");
         }
         else if (currentTab === 'wifi') {
@@ -313,50 +301,55 @@
 
         if (!dataToEncode) { alert("Vui lòng nhập dữ liệu để tạo mã."); return; }
 
-        // --- 2. THIẾT LẬP THÔNG SỐ VÀ VẼ MÃ QR ---
+        // --- 2. THUẬT TOÁN VẼ LÕI (CORE RENDER) ---
         let fgColor = document.getElementById('color-fg').value;
         let bgColor = document.getElementById('color-bg').value;
         let qrSize = parseInt(document.getElementById('size-slider').value);
 
-        let padding = Math.floor(qrSize * 0.1); 
-        let innerSize = qrSize - (padding * 2);
-
+        // Thiết lập kích thước Canvas
         finalCanvas.width = qrSize;
         finalCanvas.height = qrSize;
 
-        // Xóa thông báo lỗi cũ
-        document.getElementById("btn-download").style.display = "none";
+        // Tính toán khoảng trắng an toàn (Margin) bằng 10%
+        let padding = Math.floor(qrSize * 0.1); 
+        let innerSize = qrSize - (padding * 2);
 
-        // Sử dụng thư viện QRCode mới
-        QRCode.toCanvas(hiddenCanvas, dataToEncode, {
-            errorCorrectionLevel: currentEC,
-            margin: 0,
-            width: innerSize,
-            color: {
-                dark: fgColor,
-                light: bgColor
-            }
-        }, function (error) {
-            if (error) {
-                alert("Đã xảy ra lỗi hệ thống khi tạo mã: " + error.message);
-                console.error(error);
-                return;
-            }
+        try {
+            // Khởi tạo thuật toán Kazuhiko Arase (0 = Tự động tính toán dung lượng)
+            var qr = qrcode(0, currentEC);
+            qr.addData(toUTF8(dataToEncode));
+            qr.make();
 
-            // Vẽ nền tổng thể
+            // Lấy thông số ma trận
+            var moduleCount = qr.getModuleCount();
+            var cellSize = innerSize / moduleCount;
+
+            // Tô toàn bộ nền
             ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-            // Copy mã QR lõi từ hiddenCanvas sang finalCanvas
-            ctx.drawImage(hiddenCanvas, padding, padding, innerSize, innerSize);
+            // Tự tay vẽ từng điểm ảnh của mã QR (Đảm bảo độ nét tuyệt đối)
+            ctx.fillStyle = fgColor;
+            for (var r = 0; r < moduleCount; r++) {
+                for (var c = 0; c < moduleCount; c++) {
+                    if (qr.isDark(r, c)) {
+                        // Tính toán tọa độ chính xác để không bị kẽ hở vỡ nét
+                        var x = padding + Math.round(c * cellSize);
+                        var y = padding + Math.round(r * cellSize);
+                        var w = Math.round((c + 1) * cellSize) - Math.round(c * cellSize);
+                        var h = Math.round((r + 1) * cellSize) - Math.round(r * cellSize);
+                        ctx.fillRect(x, y, w, h);
+                    }
+                }
+            }
 
-            // Vẽ Logo đè lên nếu có
+            // Chèn Logo lên trên cùng
             if (selectedLogo && selectedLogo.complete) {
                 let logoSize = Math.floor(qrSize * 0.22); 
                 let x = (qrSize - logoSize) / 2;
                 let y = (qrSize - logoSize) / 2;
 
-                // Tạo lớp bảo vệ viền trắng bo tròn cho logo
+                // Nền bo tròn bảo vệ logo
                 ctx.fillStyle = bgColor;
                 ctx.beginPath();
                 ctx.roundRect(x - 4, y - 4, logoSize + 8, logoSize + 8, 8);
@@ -366,9 +359,12 @@
                 ctx.drawImage(selectedLogo, x, y, logoSize, logoSize);
             }
 
-            // Hiển thị nút tải về
             document.getElementById("btn-download").style.display = "block";
-        });
+
+        } catch (err) {
+            alert("Đã có lỗi xảy ra. Vui lòng kiểm tra lại dữ liệu nhập vào.");
+            console.error(err);
+        }
     }
 
     function downloadQR() {
@@ -381,7 +377,6 @@
         document.body.removeChild(downloadLink);
     }
 
-    // Polyfill tương thích trình duyệt cũ
     if (!HTMLCanvasElement.prototype.roundRect) {
         CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
             if (w < 2 * r) r = w / 2; if (h < 2 * r) r = h / 2;
