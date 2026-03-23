@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QRCODE - AIBTeM</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <style>
@@ -16,12 +16,20 @@
             --border-color: #e0e0e0;
         }
 
-        body {
+        /* KHẮC PHỤC LỖI TRÀN VIỀN NGANG: Ép mọi phần tử không được vượt quá width */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        /* KHẮC PHỤC LỖI CUỘN NGANG: Khóa cứng trục X */
+        html, body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body);
             margin: 0;
             padding: 0;
             color: var(--text-main);
+            overflow-x: hidden; 
+            width: 100%;
         }
 
         header {
@@ -44,6 +52,7 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            flex-shrink: 0;
         }
         header h1 {
             margin: 0;
@@ -59,6 +68,7 @@
             padding: 30px 40px;
             max-width: 1400px;
             margin: 0 auto;
+            width: 100%;
         }
         .left-panel { flex: 1; min-width: 400px; display: flex; flex-direction: column; gap: 20px; }
         .right-panel { width: 450px; display: flex; flex-direction: column; gap: 20px; }
@@ -69,6 +79,7 @@
             padding: 25px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             border: 1px solid var(--border-color);
+            width: 100%;
         }
 
         .tabs {
@@ -83,7 +94,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; width: 100%; }
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #555;}
         input[type="text"], input[type="url"], input[type="email"], input[type="tel"], input[type="password"], select {
             width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box; transition: 0.3s; font-family: inherit;
@@ -92,7 +103,7 @@
         .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #555; }
         .checkbox-group input { width: auto; cursor: pointer; }
 
-        .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;}
         .color-picker-wrapper { display: flex; align-items: center; gap: 10px; }
         input[type="color"] { border: none; width: 35px; height: 35px; padding: 0; cursor: pointer; background: none; border-radius: 4px;}
         .color-hex { font-size: 13px; font-family: monospace; background: #f0f0f0; padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd;}
@@ -100,20 +111,24 @@
         input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary); }
         .range-value { font-weight: bold; color: var(--primary); }
 
-        .ec-buttons { display: flex; gap: 10px; }
-        .ec-btn { flex: 1; padding: 8px 0; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; color: #555; transition: 0.2s; }
+        .ec-buttons { display: flex; gap: 10px; width: 100%; flex-wrap: wrap;}
+        .ec-btn { flex: 1; min-width: 60px; padding: 8px 0; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; color: #555; transition: 0.2s; text-align: center;}
         .ec-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .btn-action { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-action:hover { background: var(--primary-hover); }
 
-        .qr-display-area { display: flex; justify-content: center; align-items: center; min-height: 400px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; margin-bottom: 20px; padding: 20px; position: relative;}
+        .qr-display-area { display: flex; justify-content: center; align-items: center; min-height: 400px; background: #f8f9fa; border: 2px dashed #ddd; border-radius: 8px; margin-bottom: 20px; padding: 20px; position: relative; width: 100%; overflow: hidden;}
         #finalCanvas { max-width: 100%; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 12px; }
 
+        /* ================= TỐI ƯU HÓA MOBILE ================= */
         @media (max-width: 900px) {
-            .app-container { flex-direction: column; padding: 20px; }
+            header { padding: 15px 20px; }
+            .app-container { flex-direction: column; padding: 15px; } /* Giảm padding trên mobile */
             .left-panel, .right-panel { width: 100%; min-width: 100%; }
-            .right-panel { order: -1; } 
+            .card { padding: 15px; } /* Thu gọn khoảng trắng bên trong các khối */
+            
+            /* Đã xóa dòng lệnh đảo ngược (.right-panel { order: -1; }) để mã QR nằm ở dưới cùng */
         }
     </style>
 </head>
@@ -289,7 +304,7 @@
         return unescape(encodeURIComponent(str));
     }
 
-    // --- HÀM VẼ GÓC BO TRÒN CHUYÊN DỤNG (Xóa bỏ lỗi dính lớp mảng màu) ---
+    // --- HÀM VẼ GÓC BO TRÒN CHUYÊN DỤNG ---
     function fillRoundRect(context, x, y, w, h, r, color) {
         context.fillStyle = color;
         context.beginPath();
@@ -374,7 +389,6 @@
         let offsetY = 0;
         let margin = 20;
 
-        // Xử lý tọa độ cho các khung (Đã tinh chỉnh tỷ lệ cho chuẩn xác)
         switch(frameStyle) {
             case 'border':
                 canvasW = coreSize + (margin * 2);
@@ -423,27 +437,26 @@
 
             ctx.clearRect(0, 0, canvasW, canvasH);
             
-            // --- VẼ KHUNG VIỀN MỚI ---
             if (frameStyle === 'border') {
                 fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
                 fillRoundRect(ctx, 8, 8, canvasW - 16, canvasH - 16, 10, bgColor);
 
             } else if (frameStyle === 'scan-white-black') {
                 fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
-                fillRoundRect(ctx, 8, 8, canvasW - 16, coreSize + 12, 10, bgColor); // Lớp nền trắng chứa QR
+                fillRoundRect(ctx, 8, 8, canvasW - 16, coreSize + 12, 10, bgColor);
                 
-                ctx.fillStyle = bgColor; // Chữ trắng
+                ctx.fillStyle = bgColor; 
                 ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 60);
 
             } else if (frameStyle === 'scan-black-white') {
-                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, bgColor); // Nền tồng thể
-                strokeRoundRect(ctx, 4, 4, canvasW - 8, canvasH - 8, 12, fgColor, 4); // Viền mảnh
-                fillRoundRect(ctx, 15, coreSize + 20, canvasW - 30, 60, 10, fgColor); // Hộp đen chứa chữ
+                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, bgColor); 
+                strokeRoundRect(ctx, 4, 4, canvasW - 8, canvasH - 8, 12, fgColor, 4); 
+                fillRoundRect(ctx, 15, coreSize + 20, canvasW - 30, 60, 10, fgColor); 
                 
-                ctx.fillStyle = bgColor; // Chữ trắng bên trong hộp đen
+                ctx.fillStyle = bgColor; 
                 ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
@@ -453,7 +466,7 @@
                 fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
                 fillRoundRect(ctx, 8, 8, canvasW - 16, coreSize + 12, 10, bgColor);
                 
-                ctx.fillStyle = bgColor; // Chữ trắng
+                ctx.fillStyle = bgColor;
                 ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
@@ -461,20 +474,19 @@
 
             } else if (frameStyle === 'pin-drop') {
                 ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, canvasW, canvasH); // Nền tồng thể
-                strokeRoundRect(ctx, 10, 10, canvasW - 20, coreSize + 10, 15, fgColor, 6); // Khung bao quanh QR
+                ctx.fillRect(0, 0, canvasW, canvasH); 
+                strokeRoundRect(ctx, 10, 10, canvasW - 20, coreSize + 10, 15, fgColor, 6); 
                 
-                // Vẽ cuống Bong bóng thoại
                 fillRoundRect(ctx, 20, coreSize + 35, canvasW - 40, 55, 12, fgColor);
                 ctx.fillStyle = fgColor;
                 ctx.beginPath();
                 ctx.moveTo(canvasW/2 - 15, coreSize + 89);
                 ctx.lineTo(canvasW/2 + 15, coreSize + 89);
-                ctx.lineTo(canvasW/2, coreSize + 115); // Đỉnh nhọn chĩa xuống
+                ctx.lineTo(canvasW/2, coreSize + 115); 
                 ctx.closePath();
                 ctx.fill();
 
-                ctx.fillStyle = bgColor; // Chữ trắng
+                ctx.fillStyle = bgColor; 
                 ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
@@ -499,7 +511,7 @@
                 }
             }
 
-            // --- VẼ LOGO (Nằm chính giữa lõi) ---
+            // --- VẼ LOGO ---
             if (selectedLogo && selectedLogo.complete) {
                 let logoSize = Math.floor(coreSize * 0.22); 
                 let x = offsetX + (coreSize - logoSize) / 2;
