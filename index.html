@@ -138,38 +138,38 @@
             <div id="tab-url" class="tab-content active">
                 <div class="form-group">
                     <label>Nhập đường dẫn (URL)</label>
-                    <input type="url" id="input-url" placeholder="https://lamchuaigiaoduc.vn" oninput="triggerAutoUpdate()">
+                    <input type="url" id="input-url" placeholder="https://lamchuaigiaoduc.vn">
                 </div>
             </div>
 
             <div id="tab-vcard" class="tab-content">
-                <div class="form-group"><label>Họ và Tên (*)</label><input type="text" id="vc-name" placeholder="VD: Vũ Xuân Hùng" oninput="triggerAutoUpdate()"></div>
-                <div class="form-group"><label>Chức vụ</label><input type="text" id="vc-title" placeholder="VD: Chuyên gia Cao cấp" oninput="triggerAutoUpdate()"></div>
-                <div class="form-group"><label>Số điện thoại (Di động)</label><input type="tel" id="vc-phone" placeholder="VD: 0988xxxxxx" oninput="triggerAutoUpdate()"></div>
-                <div class="form-group"><label>Email</label><input type="email" id="vc-email" placeholder="VD: email@domain.com" oninput="triggerAutoUpdate()"></div>
-                <div class="form-group"><label>Cơ quan / Tổ chức</label><input type="text" id="vc-org" placeholder="VD: Bộ Nội vụ" oninput="triggerAutoUpdate()"></div>
-                <div class="form-group"><label>Địa chỉ</label><input type="text" id="vc-address" placeholder="VD: Khu Rainbow Linh Đàm, Hà Nội" oninput="triggerAutoUpdate()"></div>
+                <div class="form-group"><label>Họ và Tên (*)</label><input type="text" id="vc-name" placeholder="VD: Vũ Xuân Hùng"></div>
+                <div class="form-group"><label>Chức vụ</label><input type="text" id="vc-title" placeholder="VD: Chuyên gia Cao cấp"></div>
+                <div class="form-group"><label>Số điện thoại (Di động)</label><input type="tel" id="vc-phone" placeholder="VD: 0988xxxxxx"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="vc-email" placeholder="VD: email@domain.com"></div>
+                <div class="form-group"><label>Cơ quan / Tổ chức</label><input type="text" id="vc-org" placeholder="VD: Bộ Nội vụ"></div>
+                <div class="form-group"><label>Địa chỉ</label><input type="text" id="vc-address" placeholder="VD: Khu Rainbow Linh Đàm, Hà Nội"></div>
             </div>
 
             <div id="tab-wifi" class="tab-content">
-                <div class="form-group"><label>Tên mạng Wifi (SSID) (*)</label><input type="text" id="wifi-ssid" placeholder="Nhập tên mạng Wifi..." oninput="triggerAutoUpdate()"></div>
-                <div class="form-group"><label>Mật khẩu</label><input type="password" id="wifi-pass" placeholder="Nhập mật khẩu (Để trống nếu mạng mở)..." oninput="triggerAutoUpdate()"></div>
+                <div class="form-group"><label>Tên mạng Wifi (SSID) (*)</label><input type="text" id="wifi-ssid" placeholder="Nhập tên mạng Wifi..."></div>
+                <div class="form-group"><label>Mật khẩu</label><input type="password" id="wifi-pass" placeholder="Nhập mật khẩu (Để trống nếu mạng mở)..."></div>
                 <div class="form-group">
                     <label>Loại bảo mật</label>
-                    <select id="wifi-type" onchange="triggerAutoUpdate()">
+                    <select id="wifi-type">
                         <option value="WPA">WPA/WPA2</option>
                         <option value="WEP">WEP</option>
                         <option value="nopass">Không có mật khẩu</option>
                     </select>
                 </div>
                 <div class="form-group checkbox-group">
-                    <input type="checkbox" id="wifi-hidden" onchange="triggerAutoUpdate()">
+                    <input type="checkbox" id="wifi-hidden">
                     <label for="wifi-hidden" style="margin: 0; font-weight: normal;">Mạng ẩn (Hidden Network)</label>
                 </div>
             </div>
 
             <div id="tab-phone" class="tab-content">
-                <div class="form-group"><label>Số điện thoại (*)</label><input type="tel" id="input-phone" placeholder="VD: 0901234567" oninput="triggerAutoUpdate()"></div>
+                <div class="form-group"><label>Số điện thoại (*)</label><input type="tel" id="input-phone" placeholder="VD: 0901234567"></div>
             </div>
         </div>
 
@@ -233,7 +233,10 @@
     let currentTab = 'url';
     let currentEC = 'H';
     let selectedLogo = null;
-    let isQRGenerated = false; // Biến cờ kiểm tra xem mã QR đã được tạo lần nào chưa
+    
+    // BIẾN QUAN TRỌNG: Lưu trữ dữ liệu tĩnh của lần bấm nút "Tạo mã QR" cuối cùng
+    let lastGeneratedData = null; 
+    
     let finalCanvas = document.getElementById("finalCanvas");
     let ctx = finalCanvas.getContext("2d");
 
@@ -244,7 +247,7 @@
         
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById('tab-' + tabId).classList.add('active');
-        triggerAutoUpdate();
+        // Không gọi auto-update khi chuyển Tab nữa
     }
 
     function setEC(levelStr, btnElement) {
@@ -266,90 +269,86 @@
         reader.onload = function(event) {
             selectedLogo = new Image();
             selectedLogo.onload = function() {
-                triggerAutoUpdate(); // Cập nhật ngay khi ảnh logo load xong vào bộ nhớ
+                triggerAutoUpdate(); 
             }
             selectedLogo.src = event.target.result;
         }
         reader.readAsDataURL(file);
     });
 
-    // Hàm gọi tự động cập nhật (Chỉ chạy nếu đã từng ấn nút Tạo mã 1 lần)
+    // Hàm gọi tự động cập nhật - CHỈ CHẠY NẾU ĐÃ CÓ DỮ LIỆU ĐƯỢC LƯU
     function triggerAutoUpdate() {
-        if (isQRGenerated) {
+        if (lastGeneratedData) {
             generateQR(true);
         }
     }
 
-    // Ép kiểu chuẩn Quốc tế (UTF-8)
     function toUTF8(str) {
         return unescape(encodeURIComponent(str));
     }
 
-    // Biến isAuto = true khi hệ thống tự động gọi, false khi người dùng bấm nút
     function generateQR(isAuto = false) {
         let dataToEncode = "";
         
-        // --- 1. THU THẬP DỮ LIỆU ---
-        if (currentTab === 'url') {
-            dataToEncode = document.getElementById('input-url').value.trim();
-        } 
-        else if (currentTab === 'vcard') {
-            let name = document.getElementById('vc-name').value.trim();
-            let title = document.getElementById('vc-title').value.trim();
-            let phone = document.getElementById('vc-phone').value.trim();
-            let email = document.getElementById('vc-email').value.trim();
-            let org = document.getElementById('vc-org').value.trim();
-            let address = document.getElementById('vc-address').value.trim();
-            
-            if(!name) { 
-                if(!isAuto) alert("Vui lòng nhập Họ và Tên cho VCard."); 
-                return; 
+        // --- 1. PHÂN LUỒNG LẤY DỮ LIỆU ---
+        
+        if (!isAuto) {
+            // Trường hợp 1: GỌI TỪ NÚT BẤM -> Đọc dữ liệu mới từ các ô nhập liệu
+            if (currentTab === 'url') {
+                dataToEncode = document.getElementById('input-url').value.trim();
+            } 
+            else if (currentTab === 'vcard') {
+                let name = document.getElementById('vc-name').value.trim();
+                let title = document.getElementById('vc-title').value.trim();
+                let phone = document.getElementById('vc-phone').value.trim();
+                let email = document.getElementById('vc-email').value.trim();
+                let org = document.getElementById('vc-org').value.trim();
+                let address = document.getElementById('vc-address').value.trim();
+                
+                if(!name) { alert("Vui lòng nhập Họ và Tên cho VCard."); return; }
+                
+                let vcardArr = [
+                    "BEGIN:VCARD", 
+                    "VERSION:3.0", 
+                    "N;CHARSET=UTF-8:;" + name + ";;;", 
+                    "FN;CHARSET=UTF-8:" + name          
+                ];
+                
+                if (org) vcardArr.push("ORG;CHARSET=UTF-8:" + org);
+                if (title) vcardArr.push("TITLE;CHARSET=UTF-8:" + title);
+                if (phone) vcardArr.push("TEL;TYPE=CELL:" + phone);
+                if (email) vcardArr.push("EMAIL:" + email);
+                if (address) vcardArr.push("ADR;CHARSET=UTF-8:;;" + address + ";;;;");
+                
+                vcardArr.push("END:VCARD");
+                dataToEncode = vcardArr.join("\n");
             }
-            
-            // Xây dựng cấu trúc VCard 3.0 Chuẩn mực Quốc tế
-            let vcardArr = [
-                "BEGIN:VCARD", 
-                "VERSION:3.0", 
-                "N;CHARSET=UTF-8:;" + name + ";;;", // Đảm bảo điện thoại nhận dạng đúng phần Tên
-                "FN;CHARSET=UTF-8:" + name          // Tên hiển thị
-            ];
-            
-            if (org) vcardArr.push("ORG;CHARSET=UTF-8:" + org);
-            if (title) vcardArr.push("TITLE;CHARSET=UTF-8:" + title);
-            // Thay đổi TYPE=WORK thành TYPE=CELL để gắn đúng mác "Số Di động"
-            if (phone) vcardArr.push("TEL;TYPE=CELL:" + phone);
-            if (email) vcardArr.push("EMAIL:" + email);
-            if (address) vcardArr.push("ADR;CHARSET=UTF-8:;;" + address + ";;;;");
-            
-            vcardArr.push("END:VCARD");
-            dataToEncode = vcardArr.join("\n");
-        }
-        else if (currentTab === 'wifi') {
-            let ssid = document.getElementById('wifi-ssid').value.trim();
-            let pass = document.getElementById('wifi-pass').value;
-            let type = document.getElementById('wifi-type').value;
-            let hidden = document.getElementById('wifi-hidden').checked ? 'true' : 'false';
-            if(!ssid) { 
-                if(!isAuto) alert("Vui lòng nhập Tên mạng Wifi (SSID)."); 
-                return; 
+            else if (currentTab === 'wifi') {
+                let ssid = document.getElementById('wifi-ssid').value.trim();
+                let pass = document.getElementById('wifi-pass').value;
+                let type = document.getElementById('wifi-type').value;
+                let hidden = document.getElementById('wifi-hidden').checked ? 'true' : 'false';
+                if(!ssid) { alert("Vui lòng nhập Tên mạng Wifi (SSID)."); return; }
+                dataToEncode = `WIFI:T:${type};S:${ssid};P:${pass};H:${hidden};;`;
             }
-            dataToEncode = `WIFI:T:${type};S:${ssid};P:${pass};H:${hidden};;`;
-        }
-        else if (currentTab === 'phone') {
-            let phone = document.getElementById('input-phone').value.trim();
-            if(!phone) { 
-                if(!isAuto) alert("Vui lòng nhập số điện thoại."); 
-                return; 
+            else if (currentTab === 'phone') {
+                let phone = document.getElementById('input-phone').value.trim();
+                if(!phone) { alert("Vui lòng nhập số điện thoại."); return; }
+                dataToEncode = `tel:${phone}`;
             }
-            dataToEncode = `tel:${phone}`;
+
+            if (!dataToEncode) { alert("Vui lòng nhập dữ liệu để tạo mã."); return; }
+
+            // CHỐT DỮ LIỆU: Lưu lại để tái sử dụng cho các lần tùy chỉnh đồ họa
+            lastGeneratedData = dataToEncode;
+
+        } else {
+            // Trường hợp 2: GỌI TỪ TÙY CHỈNH NÂNG CAO -> Dùng lại dữ liệu lõi đã chốt
+            if (!lastGeneratedData) return; 
+            dataToEncode = lastGeneratedData;
         }
 
-        if (!dataToEncode) { 
-            if(!isAuto) alert("Vui lòng nhập dữ liệu để tạo mã."); 
-            return; 
-        }
-
-        // --- 2. THUẬT TOÁN VẼ LÕI ---
+        // --- 2. THUẬT TOÁN VẼ LÕI (Không thay đổi) ---
         let fgColor = document.getElementById('color-fg').value;
         let bgColor = document.getElementById('color-bg').value;
         let qrSize = parseInt(document.getElementById('size-slider').value);
@@ -398,7 +397,6 @@
             }
 
             document.getElementById("btn-download").style.display = "block";
-            isQRGenerated = true; // Ghi nhận hệ thống đã khởi tạo mã thành công ít nhất 1 lần
 
         } catch (err) {
             if(!isAuto) alert("Đã có lỗi xảy ra. Vui lòng kiểm tra lại dữ liệu nhập vào.");
