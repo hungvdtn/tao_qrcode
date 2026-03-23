@@ -293,4 +293,237 @@
     function fillRoundRect(context, x, y, w, h, r, color) {
         context.fillStyle = color;
         context.beginPath();
-        context.moveTo
+        context.moveTo(x + r, y);
+        context.arcTo(x + w, y, x + w, y + h, r);
+        context.arcTo(x + w, y + h, x, y + h, r);
+        context.arcTo(x, y + h, x, y, r);
+        context.arcTo(x, y, x + w, y, r);
+        context.closePath();
+        context.fill();
+    }
+
+    function strokeRoundRect(context, x, y, w, h, r, color, lineWidth) {
+        context.strokeStyle = color;
+        context.lineWidth = lineWidth;
+        context.beginPath();
+        context.moveTo(x + r, y);
+        context.arcTo(x + w, y, x + w, y + h, r);
+        context.arcTo(x + w, y + h, x, y + h, r);
+        context.arcTo(x, y + h, x, y, r);
+        context.arcTo(x, y, x + w, y, r);
+        context.closePath();
+        context.stroke();
+    }
+
+    function generateQR() {
+        let dataToEncode = "";
+        
+        // --- 1. LẤY DỮ LIỆU ĐỘNG ---
+        if (currentTab === 'url') {
+            dataToEncode = document.getElementById('input-url').value.trim();
+        } else if (currentTab === 'vcard') {
+            let name = document.getElementById('vc-name').value.trim();
+            let title = document.getElementById('vc-title').value.trim();
+            let phone = document.getElementById('vc-phone').value.trim();
+            let email = document.getElementById('vc-email').value.trim();
+            let org = document.getElementById('vc-org').value.trim();
+            let address = document.getElementById('vc-address').value.trim();
+            
+            if (name) {
+                let vcardArr = [
+                    "BEGIN:VCARD", "VERSION:3.0", 
+                    "N;CHARSET=UTF-8:;" + name + ";;;", 
+                    "FN;CHARSET=UTF-8:" + name          
+                ];
+                if (org) vcardArr.push("ORG;CHARSET=UTF-8:" + org);
+                if (title) vcardArr.push("TITLE;CHARSET=UTF-8:" + title);
+                if (phone) vcardArr.push("TEL;TYPE=CELL:" + phone);
+                if (email) vcardArr.push("EMAIL:" + email);
+                if (address) vcardArr.push("ADR;CHARSET=UTF-8:;;" + address + ";;;;");
+                vcardArr.push("END:VCARD");
+                dataToEncode = vcardArr.join("\n");
+            }
+        } else if (currentTab === 'wifi') {
+            let ssid = document.getElementById('wifi-ssid').value.trim();
+            let pass = document.getElementById('wifi-pass').value;
+            let type = document.getElementById('wifi-type').value;
+            let hidden = document.getElementById('wifi-hidden').checked ? 'true' : 'false';
+            if (ssid) {
+                dataToEncode = `WIFI:T:${type};S:${ssid};P:${pass};H:${hidden};;`;
+            }
+        } else if (currentTab === 'phone') {
+            let phone = document.getElementById('input-phone').value.trim();
+            if (phone) {
+                dataToEncode = `tel:${phone}`;
+            }
+        }
+
+        if (!dataToEncode) { 
+            dataToEncode = DEFAULT_QR_TEXT;
+        }
+
+        // --- 2. THUẬT TOÁN VẼ ĐỒ HỌA & KHUNG VIỀN ---
+        let fgColor = document.getElementById('color-fg').value;
+        let bgColor = document.getElementById('color-bg').value;
+        let coreSize = parseInt(document.getElementById('size-slider').value);
+        let frameStyle = document.getElementById('frame-style').value;
+
+        let canvasW = coreSize;
+        let canvasH = coreSize;
+        let offsetX = 0;
+        let offsetY = 0;
+        let margin = 20;
+
+        // Xử lý tọa độ cho các khung (Đã tinh chỉnh tỷ lệ cho chuẩn xác)
+        switch(frameStyle) {
+            case 'border':
+                canvasW = coreSize + (margin * 2);
+                canvasH = coreSize + (margin * 2);
+                offsetX = margin;
+                offsetY = margin;
+                break;
+            case 'scan-white-black':
+            case 'scan-black-white':
+                canvasW = coreSize + (margin * 2);
+                canvasH = coreSize + 100;
+                offsetX = margin;
+                offsetY = margin;
+                break;
+            case 'download-app':
+                canvasW = coreSize + (margin * 2);
+                canvasH = coreSize + 100;
+                offsetX = margin;
+                offsetY = margin;
+                break;
+            case 'pin-drop':
+                canvasW = coreSize + (margin * 2);
+                canvasH = coreSize + 120;
+                offsetX = margin;
+                offsetY = margin;
+                break;
+            default: // none
+                canvasW = coreSize;
+                canvasH = coreSize;
+                offsetX = 0;
+                offsetY = 0;
+        }
+
+        finalCanvas.width = canvasW;
+        finalCanvas.height = canvasH;
+        let padding = Math.floor(coreSize * 0.1); 
+        let innerSize = coreSize - (padding * 2);
+
+        try {
+            var qr = qrcode(0, currentEC);
+            qr.addData(toUTF8(dataToEncode));
+            qr.make();
+
+            var moduleCount = qr.getModuleCount();
+            var cellSize = innerSize / moduleCount;
+
+            ctx.clearRect(0, 0, canvasW, canvasH);
+            
+            // --- VẼ KHUNG VIỀN MỚI ---
+            if (frameStyle === 'border') {
+                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
+                fillRoundRect(ctx, 8, 8, canvasW - 16, canvasH - 16, 10, bgColor);
+
+            } else if (frameStyle === 'scan-white-black') {
+                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
+                fillRoundRect(ctx, 8, 8, canvasW - 16, coreSize + 12, 10, bgColor); // Lớp nền trắng chứa QR
+                
+                ctx.fillStyle = bgColor; // Chữ trắng
+                ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 60);
+
+            } else if (frameStyle === 'scan-black-white') {
+                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, bgColor); // Nền tồng thể
+                strokeRoundRect(ctx, 4, 4, canvasW - 8, canvasH - 8, 12, fgColor, 4); // Viền mảnh
+                fillRoundRect(ctx, 15, coreSize + 20, canvasW - 30, 60, 10, fgColor); // Hộp đen chứa chữ
+                
+                ctx.fillStyle = bgColor; // Chữ trắng bên trong hộp đen
+                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 50);
+
+            } else if (frameStyle === 'download-app') {
+                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
+                fillRoundRect(ctx, 8, 8, canvasW - 16, coreSize + 12, 10, bgColor);
+                
+                ctx.fillStyle = bgColor; // Chữ trắng
+                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("TẢI ỨNG DỤNG", canvasW / 2, coreSize + 60);
+
+            } else if (frameStyle === 'pin-drop') {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, canvasW, canvasH); // Nền tồng thể
+                strokeRoundRect(ctx, 10, 10, canvasW - 20, coreSize + 10, 15, fgColor, 6); // Khung bao quanh QR
+                
+                // Vẽ cuống Bong bóng thoại
+                fillRoundRect(ctx, 20, coreSize + 35, canvasW - 40, 55, 12, fgColor);
+                ctx.fillStyle = fgColor;
+                ctx.beginPath();
+                ctx.moveTo(canvasW/2 - 15, coreSize + 89);
+                ctx.lineTo(canvasW/2 + 15, coreSize + 89);
+                ctx.lineTo(canvasW/2, coreSize + 115); // Đỉnh nhọn chĩa xuống
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = bgColor; // Chữ trắng
+                ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 64);
+
+            } else {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, canvasW, canvasH);
+            }
+
+            // --- VẼ LÕI MÃ QR ---
+            ctx.fillStyle = fgColor;
+            for (var r = 0; r < moduleCount; r++) {
+                for (var c = 0; c < moduleCount; c++) {
+                    if (qr.isDark(r, c)) {
+                        var x = offsetX + padding + Math.round(c * cellSize);
+                        var y = offsetY + padding + Math.round(r * cellSize);
+                        var w = Math.round((c + 1) * cellSize) - Math.round(c * cellSize);
+                        var h = Math.round((r + 1) * cellSize) - Math.round(r * cellSize);
+                        ctx.fillRect(x, y, w, h);
+                    }
+                }
+            }
+
+            // --- VẼ LOGO (Nằm chính giữa lõi) ---
+            if (selectedLogo && selectedLogo.complete) {
+                let logoSize = Math.floor(coreSize * 0.22); 
+                let x = offsetX + (coreSize - logoSize) / 2;
+                let y = offsetY + (coreSize - logoSize) / 2;
+
+                fillRoundRect(ctx, x - 4, y - 4, logoSize + 8, logoSize + 8, 8, bgColor);
+                ctx.drawImage(selectedLogo, x, y, logoSize, logoSize);
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function downloadQR() {
+        let imageURL = finalCanvas.toDataURL("image/png");
+        let downloadLink = document.createElement("a");
+        downloadLink.href = imageURL;
+        downloadLink.download = "AIBTeM_QRCode.png";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+</script>
+
+</body>
+</html>
