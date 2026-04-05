@@ -48,9 +48,9 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color); width: 100%;
         }
 
-        /* ================= TÙY CHỈNH MENU (THỰC ĐƠN) CÓ NỀN ================= */
+        /* ================= TÙY CHỈNH MENU (THỰC ĐƠN) ================= */
         .tabs-container {
-            background-color: #eef2f5; /* Nền xám nhạt bo tròn phân biệt rõ ràng */
+            background-color: #eef2f5; 
             padding: 8px;
             border-radius: 10px;
             margin-bottom: 25px;
@@ -61,13 +61,16 @@
         }
         .tab-btn {
             background: transparent; border: none; padding: 10px 16px; font-size: 15px;
-            font-weight: 600; color: #666; cursor: pointer; border-radius: 8px; transition: 0.3s;
+            font-weight: 600; color: #555; cursor: pointer; border-radius: 8px; transition: 0.3s;
         }
+        
+        /* CẬP NHẬT NÚT ĐANG CHỌN THÀNH MÀU XANH LÁ CÂY */
         .tab-btn.active {
-            background: #ffffff; /* Nút được chọn nổi màu trắng */
-            color: var(--primary); /* Chữ màu xanh */
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* Đổ bóng nổi bật */
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4); 
         }
+        
         .tab-btn:hover:not(.active) { background: rgba(0,0,0,0.05); }
 
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
@@ -382,85 +385,4 @@
             let coreSize = parseInt(getVal('size-slider')) || 300;
             let frameStyle = getVal('frame-style') || "none";
 
-            let canvasW = coreSize, canvasH = coreSize, offsetX = 0, offsetY = 0, margin = 20;
-
-            switch(frameStyle) {
-                case 'border': canvasW=coreSize+(margin*2); canvasH=coreSize+(margin*2); offsetX=margin; offsetY=margin; break;
-                case 'scan-white-black': case 'scan-black-white': canvasW=coreSize+(margin*2); canvasH=coreSize+100; offsetX=margin; offsetY=margin; break;
-                case 'download-app': canvasW=coreSize+(margin*2); canvasH=coreSize+100; offsetX=margin; offsetY=margin; break;
-                case 'pin-drop': canvasW=coreSize+(margin*2); canvasH=coreSize+120; offsetX=margin; offsetY=margin; break;
-            }
-
-            finalCanvas.width = canvasW; finalCanvas.height = canvasH;
-            let padding = Math.floor(coreSize * 0.1); 
-            let innerSize = coreSize - (padding * 2);
-
-            var qr = qrcode(0, currentEC);
-            qr.addData(toUTF8(dataToEncode));
-            qr.make();
-            var moduleCount = qr.getModuleCount();
-            var cellSize = innerSize / moduleCount;
-
-            ctx.clearRect(0, 0, canvasW, canvasH);
-            
-            if (frameStyle === 'border') {
-                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
-                fillRoundRect(ctx, 8, 8, canvasW - 16, canvasH - 16, 10, bgColor);
-            } else if (frameStyle === 'scan-white-black') {
-                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
-                fillRoundRect(ctx, 8, 8, canvasW - 16, coreSize + 12, 10, bgColor);
-                ctx.fillStyle = bgColor; ctx.font = "bold 26px 'Segoe UI', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 60);
-            } else if (frameStyle === 'scan-black-white') {
-                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, bgColor); 
-                strokeRoundRect(ctx, 4, 4, canvasW - 8, canvasH - 8, 12, fgColor, 4); 
-                fillRoundRect(ctx, 15, coreSize + 20, canvasW - 30, 60, 10, fgColor); 
-                ctx.fillStyle = bgColor; ctx.font = "bold 24px 'Segoe UI', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 50);
-            } else if (frameStyle === 'download-app') {
-                fillRoundRect(ctx, 0, 0, canvasW, canvasH, 15, fgColor);
-                fillRoundRect(ctx, 8, 8, canvasW - 16, coreSize + 12, 10, bgColor);
-                ctx.fillStyle = bgColor; ctx.font = "bold 24px 'Segoe UI', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText("TẢI ỨNG DỤNG", canvasW / 2, coreSize + 60);
-            } else if (frameStyle === 'pin-drop') {
-                ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvasW, canvasH); 
-                strokeRoundRect(ctx, 10, 10, canvasW - 20, coreSize + 10, 15, fgColor, 6); 
-                fillRoundRect(ctx, 20, coreSize + 35, canvasW - 40, 55, 12, fgColor);
-                ctx.fillStyle = fgColor; ctx.beginPath(); ctx.moveTo(canvasW/2 - 15, coreSize + 89); ctx.lineTo(canvasW/2 + 15, coreSize + 89); ctx.lineTo(canvasW/2, coreSize + 115); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = bgColor; ctx.font = "bold 24px 'Segoe UI', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText("QUÉT MÃ", canvasW / 2, coreSize + 64);
-            } else {
-                ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvasW, canvasH);
-            }
-
-            ctx.fillStyle = fgColor;
-            for (var r = 0; r < moduleCount; r++) {
-                for (var c = 0; c < moduleCount; c++) {
-                    if (qr.isDark(r, c)) {
-                        ctx.fillRect(offsetX + padding + Math.round(c * cellSize), offsetY + padding + Math.round(r * cellSize), Math.round((c + 1) * cellSize) - Math.round(c * cellSize), Math.round((r + 1) * cellSize) - Math.round(r * cellSize));
-                    }
-                }
-            }
-
-            if (selectedLogo && selectedLogo.complete) {
-                let logoSize = Math.floor(coreSize * 0.22); 
-                let x = offsetX + (coreSize - logoSize) / 2; let y = offsetY + (coreSize - logoSize) / 2;
-                fillRoundRect(ctx, x - 4, y - 4, logoSize + 8, logoSize + 8, 8, bgColor);
-                ctx.drawImage(selectedLogo, x, y, logoSize, logoSize);
-            }
-
-        } catch (err) {
-            console.error("QR Generation Error: ", err);
-        }
-    }
-
-    function downloadQR() {
-        let downloadLink = document.createElement("a");
-        downloadLink.href = finalCanvas.toDataURL("image/png");
-        downloadLink.download = "AIBTeM_QRCode.png";
-        document.body.appendChild(downloadLink); downloadLink.click(); document.body.removeChild(downloadLink);
-    }
-</script>
-
-</body>
-</html>
+            let canvasW = coreSize, canvasH = coreSize
